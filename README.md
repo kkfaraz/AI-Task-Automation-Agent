@@ -118,8 +118,11 @@ Adaptive difficulty levels
 
 This project is licensed under the MIT License.
 
-👨‍💻 Author: Muhammad Faraz Liaqat Ali
-🔗 LinkedIn Profile
+# 👨‍💻 Author
+**Muhammad Faraz Liaqat Ali**
+
+🔗 [LinkedIn](https://www.linkedin.com/in/muhammad-faraz-data-scienctist/)  
+
 📧 221980007@gift.edu.pk | khokharfaraz54@gmail.com
 
 ## 📂 Repository Structure
