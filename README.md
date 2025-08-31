@@ -24,7 +24,8 @@ This project demonstrates how **AI agents can plan, execute, and adapt dynamical
 ---
 ## AI-Task-Automation-Agent/
 
-├── app/                   
+├── app/    
+
 │   ├── __init__.py        # Flask app initialization
 │   ├── routes.py          # API routes (schedule, reschedule, fetch summaries)
 │   ├── scheduler.py       # Scheduling logic (tasks → Pomodoros → slots)
