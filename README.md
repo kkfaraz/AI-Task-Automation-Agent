@@ -22,8 +22,8 @@ This project demonstrates how **AI agents can plan, execute, and adapt dynamical
 - **Testing:** PyTest
 
 ---
-AI-Task-Automation-Agent/
-│
+## AI-Task-Automation-Agent/
+
 ├── app/                   
 │   ├── __init__.py        # Flask app initialization
 │   ├── routes.py          # API routes (schedule, reschedule, fetch summaries)
@@ -31,7 +31,8 @@ AI-Task-Automation-Agent/
 │   ├── summarizer.py      # Wikipedia/notes summary fetcher
 │   ├── rescheduler.py     # Handle missed sessions intelligently
 │   └── utils.py           # Helper functions
-│
+
+
 ├── static/                # (Optional) CSS/JS for UI
 ├── templates/             # Flask HTML templates (dashboard, schedule view)
 │
@@ -39,11 +40,13 @@ AI-Task-Automation-Agent/
 │   ├── test_scheduler.py  # Unit tests for scheduling
 │   ├── test_rescheduler.py
 │   └── test_summarizer.py
-│
+
+
 ├── data/
 │   ├── sample_input.json  # Example: subjects + chapters
 │   └── output_schedule.ics
-│
+
+
 ├── requirements.txt       # Dependencies (Flask, Wikipedia, etc.)
 ├── main.py                # Entry point (run Flask server)
 ├── README.md              # Project documentation
