@@ -1,0 +1,294 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - AI Study Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i data-feather="home" class="me-2"></i>
+            Study Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i data-feather="target" class="mb-2 text-primary" style="width: 32px; height: 32px;"></i>
+                <h3 class="mb-1">{{ progress.completion_rate or 0 }}%</h3>
+                <p class="text-muted mb-0">Completion Rate</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i data-feather="book-open" class="mb-2 text-success" style="width: 32px; height: 32px;"></i>
+                <h3 class="mb-1">{{ progress.completed_sessions or 0 }}</h3>
+                <p class="text-muted mb-0">Sessions Done</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i data-feather="calendar" class="mb-2 text-warning" style="width: 32px; height: 32px;"></i>
+                <h3 class="mb-1">{{ progress.pending_sessions or 0 }}</h3>
+                <p class="text-muted mb-0">Sessions Left</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i data-feather="clock" class="mb-2 text-info" style="width: 32px; height: 32px;"></i>
+                <h3 class="mb-1">{{ progress.days_remaining or 0 }}</h3>
+                <p class="text-muted mb-0">Days Left</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Next Session -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="play-circle" class="me-2"></i>
+                    Next Study Session
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if progress.next_session %}
+                    <h6 class="text-primary">{{ progress.next_session.chapter_title }}</h6>
+                    <p class="text-muted mb-2">{{ progress.next_session.subject_name }}</p>
+                    <p class="mb-3">
+                        <i data-feather="calendar" class="me-1" style="width: 16px; height: 16px;"></i>
+                        {{ progress.next_session.scheduled_date }}
+                    </p>
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button class="btn btn-success btn-sm" onclick="completeSession('{{ progress.next_session.get(id, 0) }}')">
+                            <i data-feather="check-circle" class="me-1"></i>Complete
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="missSession('{{ progress.next_session.get(id, 0) }}')">
+                            <i data-feather="x-circle" class="me-1"></i>Miss
+                        </button>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i data-feather="check-circle" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <p class="mb-0">No upcoming sessions</p>
+                        <small>Create a study schedule to get started!</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Sessions -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="list" class="me-2"></i>
+                    This Week's Sessions
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_sessions %}
+                    <div class="list-group list-group-flush">
+                        {% for session in upcoming_sessions[:5] %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <h6 class="mb-1">{{ session.chapter_title }}</h6>
+                                    <small class="text-muted">{{ session.subject_name }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ session.scheduled_date }} at {{ session.start_time }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-secondary">{{ session.duration_hours }}h</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if upcoming_sessions|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('schedule_view') }}" class="btn btn-outline-primary btn-sm">
+                                View All Sessions
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px;"></i>
+                        <p class="mb-0">No sessions scheduled</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subjects Overview -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="book" class="me-2"></i>
+                    Subjects Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if subjects %}
+                    <div class="row">
+                        {% for subject in subjects %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ subject.name }}</h6>
+                                        <p class="text-muted small mb-2">
+                                            {{ subject.chapters|length }} chapters
+                                        </p>
+                                        <div class="progress mb-2" style="height: 6px;">
+                                            {% set completed = subject.chapters | selectattr('is_completed') | list | length %}
+                                            {% set total = subject.chapters | length %}
+                                            {% set completion = (completed / total * 100) if total > 0 else 0 %}
+                                            <div class="progress-bar" style="width: '{{ completion }}%'"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ completed }}/{{ total }} chapters complete
+                                        </small>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i data-feather="calendar" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            Exam: {{ subject.exam_date.strftime('%b %d, %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i data-feather="plus-circle" class="mb-3" style="width: 48px; height: 48px;"></i>
+                        <p class="mb-2">No subjects added yet</p>
+                        <a href="{{ url_for('add_subjects') }}" class="btn btn-primary">
+                            <i data-feather="plus-circle" class="me-1"></i>Add Your First Subject
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent AI Adaptations -->
+{% if recent_adaptations %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="cpu" class="me-2"></i>
+                    Recent AI Adaptations
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for adaptation in recent_adaptations %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1">{{ adaptation.chapter_title }}</h6>
+                                <small class="text-muted">{{ adaptation.date }}</small>
+                            </div>
+                            <p class="mb-1 text-muted">{{ adaptation.reason.replace('_', ' ').title() }}</p>
+                            <small class="text-muted">{{ adaptation.changes_summary }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Complete Session Modal -->
+<div class="modal fade" id="completeSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complete Study Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="completeSessionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="sessionNotes" class="form-label">Session Notes (Optional)</label>
+                        <textarea class="form-control" id="sessionNotes" name="notes" rows="3" 
+                                placeholder="How did the session go? Any insights or difficulties?"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Mark Complete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Miss Session Modal -->
+<div class="modal fade" id="missSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Miss Study Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="missSessionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="missReason" class="form-label">Reason for Missing Session</label>
+                        <select class="form-select" id="missReason" name="reason" required>
+                            <option value="">Select a reason...</option>
+                            <option value="Sick">Feeling sick</option>
+                            <option value="Emergency">Emergency came up</option>
+                            <option value="Work">Work commitment</option>
+                            <option value="Family">Family obligation</option>
+                            <option value="Tired">Too tired to study effectively</option>
+                            <option value="Other">Other reason</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i data-feather="info" class="me-2" style="width: 16px; height: 16px;"></i>
+                        <strong>AI will automatically reschedule this session</strong> based on your upcoming schedule and study priorities.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Mark as Missed</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function completeSession(sessionId) {
+    document.getElementById('completeSessionForm').action = `/complete-session/${sessionId}`;
+    const modal = new bootstrap.Modal(document.getElementById('completeSessionModal'));
+    modal.show();
+}
+
+function missSession(sessionId) {
+    document.getElementById('missSessionForm').action = `/miss-session/${sessionId}`;
+    const modal = new bootstrap.Modal(document.getElementById('missSessionModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

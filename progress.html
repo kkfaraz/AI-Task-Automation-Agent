@@ -1,0 +1,359 @@
+{% extends "layout.html" %}
+
+{% block title %}Progress - AI Study Planner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i data-feather="trending-up" class="me-2"></i>
+            Study Progress
+        </h1>
+    </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="bar-chart-2" class="me-2"></i>
+                    Progress Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Stats</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted">Overall Progress</span>
+                    <span class="fw-bold">{{ progress.completion_rate or 0 }}%</span>
+                </div>
+                <div class="progress mb-3">
+                    <div class="progress-bar" style="width: '{{ progress.completion_rate or 0 }}%'"></div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Completed Sessions</span>
+                    <span>{{ progress.completed_sessions or 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Missed Sessions</span>
+                    <span class="text-warning">{{ progress.missed_sessions or 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Remaining Sessions</span>
+                    <span>{{ progress.pending_sessions or 0 }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Days Remaining</span>
+                    <span class="fw-bold">{{ progress.days_remaining or 0 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subject Progress -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="book" class="me-2"></i>
+                    Subject Progress
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if subjects %}
+                    <div class="row">
+                        {% for subject in subjects %}
+                            <div class="col-lg-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">{{ subject.name }}</h6>
+                                            <span class="badge bg-{{ 'danger' if subject.difficulty_level == 'hard' else 'warning' if subject.difficulty_level == 'medium' else 'success' }}">
+                                                {{ subject.difficulty_level }}
+                                            </span>
+                                        </div>
+                                        {% set completed_count = subject.chapters | selectattr('is_completed') | list | length %}
+                                        {% set total_count = subject.chapters | length %}
+                                        {% set completion_rate = (completed_count / total_count * 100) if total_count > 0 else 0 %}
+                                        
+                                        <div class="progress mb-2" style="height: 8px;">
+                                            <div class="progress-bar" style="width: '{{ completion_rate }}%'"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ completed_count }}/{{ total_count }} chapters ({{ "%.1f"|format(completion_rate) }}%)
+                                        </small>
+                                        <br>
+                                        <small class="text-muted">
+                                            <i data-feather="calendar" class="me-1" style="width: 12px; height: 12px;"></i>
+                                            Exam: {{ subject.exam_date.strftime('%b %d, %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="book" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <p class="text-muted">No subjects added yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chapter Details -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="list" class="me-2"></i>
+                    Chapter Progress & Study Materials
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if chapters %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Chapter</th>
+                                    <th>Subject</th>
+                                    <th>Status</th>
+                                    <th>Difficulty</th>
+                                    <th>Est. Hours</th>
+                                    <th>Study Materials</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for chapter in chapters %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ chapter.title }}</strong>
+                                        </td>
+                                        <td>{{ chapter.subject_name }}</td>
+                                        <td>
+                                            {% if chapter.is_completed %}
+                                                <span class="badge bg-success">
+                                                    <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    Completed
+                                                </span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">
+                                                    <i data-feather="clock" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    In Progress
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'danger' if chapter.difficulty == 'hard' else 'warning' if chapter.difficulty == 'medium' else 'success' }}">
+                                                {{ chapter.difficulty }}
+                                            </span>
+                                        </td>
+                                        <td>{{ chapter.estimated_hours }}h</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                {% if chapter.has_summary %}
+                                                    <button class="btn btn-outline-primary" onclick="viewSummary('{{ chapter.id }}')">
+                                                        <i data-feather="file-text" style="width: 14px; height: 14px;"></i>
+                                                        Summary
+                                                    </button>
+                                                {% endif %}
+                                                {% if chapter.has_wikipedia_content %}
+                                                    <button class="btn btn-outline-info" onclick="viewWikipedia('{{ chapter.id }}')">
+                                                        <i data-feather="globe" style="width: 14px; height: 14px;"></i>
+                                                        Wikipedia
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if not chapter.has_summary or not chapter.has_wikipedia_content %}
+                                                <a href="{{ url_for('fetch_content', chapter_id=chapter.id) }}" 
+                                                   class="btn btn-outline-secondary btn-sm">
+                                                    <i data-feather="download" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                    Fetch Content
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i data-feather="list" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <p class="text-muted mb-3">No chapters found.</p>
+                        <a href="{{ url_for('add_subjects') }}" class="btn btn-primary">
+                            <i data-feather="plus-circle" class="me-1"></i>
+                            Add Subjects
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Modals -->
+<div class="modal fade" id="summaryModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="file-text" class="me-2"></i>
+                    AI-Generated Study Summary
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="summaryContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="wikipediaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="globe" class="me-2"></i>
+                    Wikipedia Content
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="wikipediaContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Store chapter data for modals
+const chaptersData = '{{ chapters | tojson | safe }}';
+
+// Progress Chart
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/progress-chart')
+        .then(response => response.json())
+        .then(data => {
+            createProgressChart(data);
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+        });
+});
+
+function createProgressChart(data) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.by_subject.map(s => s.name),
+            datasets: [{
+                label: 'Chapters Completed',
+                data: data.by_subject.map(s => s.completed),
+                backgroundColor: 'rgba(13, 202, 240, 0.8)',
+                borderColor: 'rgba(13, 202, 240, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Total Chapters',
+                data: data.by_subject.map(s => s.total),
+                backgroundColor: 'rgba(108, 117, 125, 0.3)',
+                borderColor: 'rgba(108, 117, 125, 0.8)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'var(--bs-body-color)'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: 'var(--bs-body-color)'
+                    },
+                    grid: {
+                        color: 'var(--bs-border-color)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'var(--bs-body-color)'
+                    },
+                    grid: {
+                        color: 'var(--bs-border-color)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function viewSummary(chapterId) {
+    const chapter = chaptersData.find(c => c.id === chapterId);
+    if (chapter && chapter.summary) {
+        document.getElementById('summaryContent').innerHTML = `
+            <h6>${chapter.title}</h6>
+            <p class="text-muted">${chapter.subject_name}</p>
+            <hr>
+            <div style="white-space: pre-wrap;">${chapter.summary}</div>
+        `;
+        const modal = new bootstrap.Modal(document.getElementById('summaryModal'));
+        modal.show();
+    }
+}
+
+function viewWikipedia(chapterId) {
+    const chapter = chaptersData.find(c => c.id === chapterId);
+    if (chapter && chapter.wikipedia_content) {
+        document.getElementById('wikipediaContent').innerHTML = `
+            <h6>${chapter.title}</h6>
+            <p class="text-muted">${chapter.subject_name}</p>
+            <hr>
+            <div>${chapter.wikipedia_content}</div>
+        `;
+        const modal = new bootstrap.Modal(document.getElementById('wikipediaModal'));
+        modal.show();
+    }
+}
+</script>
+{% endblock %}

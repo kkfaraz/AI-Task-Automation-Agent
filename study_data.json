@@ -1,0 +1,282 @@
+{
+  "app_config": {
+    "name": "AI Study Planner",
+    "version": "1.0.0",
+    "description": "Autonomous study schedule management powered by AI",
+    "features": [
+      "AI-powered task breakdown",
+      "Intelligent scheduling",
+      "Wikipedia content integration", 
+      "Adaptive rescheduling",
+      "Progress tracking",
+      "Multi-step reasoning"
+    ]
+  },
+  "default_settings": {
+    "study_preferences": {
+      "default_daily_hours": 6.0,
+      "default_session_duration": 2.0,
+      "break_duration_minutes": 15,
+      "preferred_time_slots": [
+        "09:00-12:00",
+        "14:00-17:00", 
+        "19:00-22:00"
+      ],
+      "difficulty_multipliers": {
+        "easy": 1.0,
+        "medium": 1.2,
+        "hard": 1.5
+      }
+    },
+    "ai_settings": {
+      "model": "openai/gpt-4o",
+      "max_tokens": 1500,
+      "temperature": 0.7,
+      "scheduling_principles": [
+        "Spaced repetition for better retention",
+        "Harder topics when mental energy is highest",
+        "Regular breaks and varied subjects",
+        "Buffer time for review and catch-up",
+        "Progressive difficulty increase"
+      ]
+    },
+    "notification_settings": {
+      "session_reminders": true,
+      "deadline_alerts": true,
+      "progress_updates": true,
+      "ai_suggestions": true
+    }
+  },
+  "study_templates": {
+    "exam_preparation": {
+      "name": "Exam Preparation",
+      "description": "Comprehensive exam preparation with spaced repetition",
+      "phases": [
+        {
+          "name": "Initial Learning",
+          "duration_percentage": 40,
+          "focus": "New material comprehension"
+        },
+        {
+          "name": "Practice & Application", 
+          "duration_percentage": 35,
+          "focus": "Problem solving and application"
+        },
+        {
+          "name": "Review & Reinforcement",
+          "duration_percentage": 25,
+          "focus": "Revision and weak area strengthening"
+        }
+      ]
+    },
+    "continuous_learning": {
+      "name": "Continuous Learning",
+      "description": "Steady progress with regular review cycles",
+      "review_intervals": [1, 3, 7, 14, 30],
+      "focus_distribution": {
+        "new_material": 60,
+        "review": 30,
+        "practice": 10
+      }
+    }
+  },
+  "difficulty_indicators": {
+    "easy": {
+      "color": "success",
+      "icon": "check-circle",
+      "study_approach": "Quick overview and practice",
+      "recommended_duration": 1.5
+    },
+    "medium": {
+      "color": "warning", 
+      "icon": "clock",
+      "study_approach": "Thorough study with examples",
+      "recommended_duration": 2.0
+    },
+    "hard": {
+      "color": "danger",
+      "icon": "alert-triangle", 
+      "study_approach": "Deep dive with multiple resources",
+      "recommended_duration": 3.0
+    }
+  },
+  "subject_categories": {
+    "mathematics": {
+      "icon": "trending-up",
+      "color": "primary",
+      "study_tips": [
+        "Practice problems daily",
+        "Build from fundamentals",
+        "Use visual aids for concepts"
+      ]
+    },
+    "science": {
+      "icon": "atom",
+      "color": "info", 
+      "study_tips": [
+        "Connect theory to real-world examples",
+        "Use diagrams and experiments",
+        "Regular review of formulas"
+      ]
+    },
+    "language": {
+      "icon": "book-open",
+      "color": "success",
+      "study_tips": [
+        "Daily reading practice",
+        "Vocabulary building",
+        "Grammar pattern recognition"
+      ]
+    },
+    "history": {
+      "icon": "clock",
+      "color": "warning",
+      "study_tips": [
+        "Timeline creation",
+        "Cause and effect analysis", 
+        "Multiple perspective study"
+      ]
+    },
+    "general": {
+      "icon": "book",
+      "color": "secondary",
+      "study_tips": [
+        "Active reading techniques",
+        "Regular summarization",
+        "Spaced repetition"
+      ]
+    }
+  },
+  "adaptation_triggers": {
+    "missed_session": {
+      "severity": "medium",
+      "auto_reschedule": true,
+      "buffer_days": 2,
+      "priority_boost": 1.2
+    },
+    "low_performance": {
+      "severity": "high",
+      "extra_practice": true,
+      "difficulty_adjustment": -0.1,
+      "additional_resources": true
+    },
+    "ahead_of_schedule": {
+      "severity": "low", 
+      "pace_adjustment": 0.9,
+      "advanced_topics": true,
+      "review_boost": 1.1
+    },
+    "time_constraint": {
+      "severity": "high",
+      "priority_focus": true,
+      "content_optimization": true,
+      "efficiency_mode": true
+    }
+  },
+  "content_sources": {
+    "wikipedia": {
+      "base_url": "https://en.wikipedia.org/api/rest_v1/page/summary/",
+      "search_url": "https://en.wikipedia.org/w/api.php",
+      "rate_limit": 100,
+      "cache_duration": 3600
+    },
+    "ai_summaries": {
+      "max_length": 1000,
+      "include_key_concepts": true,
+      "include_examples": true,
+      "include_mnemonics": true
+    }
+  },
+  "progress_metrics": {
+    "completion_rate": {
+      "excellent": 90,
+      "good": 75,
+      "average": 60,
+      "needs_improvement": 40
+    },
+    "consistency_score": {
+      "daily_target": 0.8,
+      "weekly_target": 5.0,
+      "missed_session_penalty": -0.1
+    },
+    "efficiency_indicators": [
+      "sessions_completed_on_time",
+      "average_session_quality_rating",
+      "material_retention_rate",
+      "exam_performance_correlation"
+    ]
+  },
+  "ui_messages": {
+    "loading": {
+      "ai_analysis": "AI is analyzing your subjects...",
+      "schedule_generation": "Creating intelligent study schedule...",
+      "content_fetching": "Fetching educational content...",
+      "adaptation": "AI is optimizing your schedule..."
+    },
+    "success": {
+      "session_completed": "Great job! Session marked as complete.",
+      "schedule_created": "Your AI-powered study schedule is ready!",
+      "content_fetched": "Study materials successfully retrieved.",
+      "adaptation_applied": "Schedule intelligently adapted to your needs."
+    },
+    "errors": {
+      "ai_unavailable": "AI service temporarily unavailable. Using backup planning.",
+      "content_fetch_failed": "Unable to fetch content. Please try again later.",
+      "schedule_conflict": "Schedule conflict detected. Please review your time slots.",
+      "invalid_dates": "Please check your date selections."
+    }
+  },
+  "keyboard_shortcuts": {
+    "global": {
+      "ctrl+s": "Quick save current form",
+      "ctrl+n": "Add new subject", 
+      "ctrl+d": "Go to dashboard",
+      "ctrl+p": "View progress",
+      "escape": "Close modal/cancel action"
+    },
+    "dashboard": {
+      "c": "Complete next session",
+      "m": "Mark session as missed",
+      "r": "Refresh progress"
+    }
+  },
+  "sample_data": {
+    "note": "This sample data is for development/testing only",
+    "subjects_examples": [
+      {
+        "name": "Calculus I",
+        "total_chapters": 8,
+        "difficulty": "hard",
+        "estimated_hours": 64
+      },
+      {
+        "name": "World History", 
+        "total_chapters": 12,
+        "difficulty": "medium",
+        "estimated_hours": 48
+      },
+      {
+        "name": "Biology Basics",
+        "total_chapters": 6,
+        "difficulty": "easy",
+        "estimated_hours": 24
+      }
+    ],
+    "chapter_examples": [
+      {
+        "title": "Limits and Continuity",
+        "subject": "Calculus I",
+        "estimated_hours": 3.5,
+        "difficulty": "hard",
+        "key_concepts": ["Limits", "Continuity", "Asymptotes"]
+      },
+      {
+        "title": "Ancient Civilizations",
+        "subject": "World History", 
+        "estimated_hours": 2.0,
+        "difficulty": "medium",
+        "key_concepts": ["Mesopotamia", "Egypt", "Indus Valley"]
+      }
+    ]
+  }
+}

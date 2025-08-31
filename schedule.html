@@ -1,0 +1,334 @@
+{% extends "layout.html" %}
+
+{% block title %}Study Schedule - AI Study Planner{% endblock %}
+
+{% block content %}
+{% if view_mode %}
+    <!-- Schedule View Mode -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>
+                    <i data-feather="calendar" class="me-2"></i>
+                    Study Schedule
+                </h1>
+                <a href="{{ url_for('create_schedule') }}" class="btn btn-outline-primary">
+                    <i data-feather="plus" class="me-1"></i>
+                    Create New Schedule
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if schedule_by_date %}
+        <div class="row">
+            <div class="col-12">
+                {% for date, sessions in schedule_by_date.items() %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i data-feather="calendar" class="me-2"></i>
+                                {{ date }}
+                                <span class="badge bg-secondary ms-2">{{ sessions|length }} sessions</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for session in sessions %}
+                                    <div class="col-md-6 col-lg-4 mb-3">
+                                        <div class="card border-start border-3 {% if session.difficulty == 'hard' %}border-danger{% elif session.difficulty == 'medium' %}border-warning{% else %}border-success{% endif %}">
+                                            <div class="card-body">
+                                                <h6 class="card-title">{{ session.chapter_title }}</h6>
+                                                <p class="text-muted small mb-2">{{ session.subject_name }}</p>
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <small class="text-muted">
+                                                        <i data-feather="clock" class="me-1" style="width: 14px; height: 14px;"></i>
+                                                        {{ session.start_time }} ({{ session.duration_hours }}h)
+                                                    </small>
+                                                    <span class="badge bg-light text-dark">{{ session.status }}</span>
+                                                </div>
+                                                {% if session.status == 'scheduled' %}
+                                                        <div class="btn-group btn-group-sm w-100" role="group">
+                                                            <button class="btn btn-outline-success" onclick="completeSession('{{ session.id }}')">
+                                                                <i data-feather="check" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                                Done
+                                                            </button>
+                                                            <button class="btn btn-outline-warning" onclick="missSession('{{ session.id }}')">
+                                                                <i data-feather="x" class="me-1" style="width: 12px; height: 12px;"></i>
+                                                                Miss
+                                                            </button>
+                                                        </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="text-center py-5">
+                    <i data-feather="calendar" class="mb-3" style="width: 64px; height: 64px;"></i>
+                    <h3>No Schedule Created</h3>
+                    <p class="text-muted mb-4">Create your first AI-powered study schedule to get started.</p>
+                    <a href="{{ url_for('create_schedule') }}" class="btn btn-primary">
+                        <i data-feather="plus-circle" class="me-2"></i>
+                        Create Schedule
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% else %}
+    <!-- Schedule Creation Mode -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i data-feather="calendar" class="me-2"></i>
+                        Create AI-Powered Study Schedule
+                    </h3>
+                    <p class="text-muted mb-0">Let AI create an optimized study schedule based on your preferences</p>
+                </div>
+                <div class="card-body">
+                    {% if not subjects %}
+                        <div class="alert alert-warning">
+                            <i data-feather="alert-triangle" class="me-2"></i>
+                            <strong>No subjects found!</strong> You need to add subjects before creating a schedule.
+                            <a href="{{ url_for('add_subjects') }}" class="btn btn-outline-warning btn-sm ms-2">
+                                Add Subjects
+                            </a>
+                        </div>
+                    {% else %}
+                        <form method="POST">
+                            <div class="mb-4">
+                                <h5>Study Plan Details</h5>
+                                <hr>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="plan_name" class="form-label">Plan Name</label>
+                                    <input type="text" class="form-control" id="plan_name" name="plan_name" 
+                                           value="Exam Preparation Plan" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="daily_hours" class="form-label">Daily Study Hours</label>
+                                    <select class="form-select" id="daily_hours" name="daily_hours" required>
+                                        <option value="3">3 hours/day</option>
+                                        <option value="4">4 hours/day</option>
+                                        <option value="5">5 hours/day</option>
+                                        <option value="6" selected>6 hours/day</option>
+                                        <option value="7">7 hours/day</option>
+                                        <option value="8">8 hours/day</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="start_date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="end_date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6>Preferred Study Time Slots</h6>
+                                <p class="text-muted small">Select your preferred times for studying</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="morning_slot" name="time_slot_0" value="09:00-12:00" checked>
+                                            <label class="form-check-label" for="morning_slot">
+                                                <i data-feather="sunrise" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                Morning (9 AM - 12 PM)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="afternoon_slot" name="time_slot_1" value="14:00-17:00" checked>
+                                            <label class="form-check-label" for="afternoon_slot">
+                                                <i data-feather="sun" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                Afternoon (2 PM - 5 PM)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="evening_slot" name="time_slot_2" value="19:00-22:00">
+                                            <label class="form-check-label" for="evening_slot">
+                                                <i data-feather="moon" class="me-1" style="width: 16px; height: 16px;"></i>
+                                                Evening (7 PM - 10 PM)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h6>Current Subjects</h6>
+                                <div class="row">
+                                    {% for subject in subjects %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                                <div>
+                                                    <strong>{{ subject.name }}</strong>
+                                                    <small class="text-muted d-block">
+                                                        {{ subject.chapters|length }} chapters, 
+                                                        Exam: {{ subject.exam_date.strftime('%b %d') }}
+                                                    </small>
+                                                </div>
+                                                <span class="badge bg-{{ 'danger' if subject.difficulty_level == 'hard' else 'warning' if subject.difficulty_level == 'medium' else 'success' }}">
+                                                    {{ subject.difficulty_level }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i data-feather="cpu" class="me-2"></i>
+                                <strong>AI Scheduling:</strong> Our AI will analyze your subjects, chapters, and preferences to create an optimized schedule with:
+                                <ul class="mb-0 mt-2">
+                                    <li>Spaced repetition for better retention</li>
+                                    <li>Difficulty-based time allocation</li>
+                                    <li>Smart break scheduling</li>
+                                    <li>Adaptive rescheduling capabilities</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i data-feather="cpu" class="me-2"></i>
+                                    Generate AI Schedule
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Session Action Modals (reused from dashboard) -->
+<div class="modal fade" id="completeSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complete Study Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="completeSessionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="sessionNotes" class="form-label">Session Notes (Optional)</label>
+                        <textarea class="form-control" id="sessionNotes" name="notes" rows="3" 
+                                placeholder="How did the session go? Any insights or difficulties?"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Mark Complete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="missSessionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Miss Study Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="missSessionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="missReason" class="form-label">Reason for Missing Session</label>
+                        <select class="form-select" id="missReason" name="reason" required>
+                            <option value="">Select a reason...</option>
+                            <option value="Sick">Feeling sick</option>
+                            <option value="Emergency">Emergency came up</option>
+                            <option value="Work">Work commitment</option>
+                            <option value="Family">Family obligation</option>
+                            <option value="Tired">Too tired to study effectively</option>
+                            <option value="Other">Other reason</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <i data-feather="info" class="me-2" style="width: 16px; height: 16px;"></i>
+                        AI will automatically reschedule this session based on your schedule and priorities.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Mark as Missed</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set minimum dates
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+    
+    if (startDateInput) {
+        startDateInput.min = today.toISOString().split('T')[0];
+        startDateInput.value = tomorrow.toISOString().split('T')[0];
+        
+        // Set end date to 30 days from start
+        const endDate = new Date(tomorrow);
+        endDate.setDate(endDate.getDate() + 30);
+        endDateInput.value = endDate.toISOString().split('T')[0];
+        
+        startDateInput.addEventListener('change', function() {
+            const selectedStart = new Date(this.value);
+            const minEnd = new Date(selectedStart);
+            minEnd.setDate(minEnd.getDate() + 1);
+            
+            endDateInput.min = minEnd.toISOString().split('T')[0];
+            if (new Date(endDateInput.value) <= selectedStart) {
+                const defaultEnd = new Date(selectedStart);
+                defaultEnd.setDate(defaultEnd.getDate() + 14);
+                endDateInput.value = defaultEnd.toISOString().split('T')[0];
+            }
+        });
+    }
+});
+
+function completeSession(sessionId) {
+    document.getElementById('completeSessionForm').action = `/complete-session/${sessionId}`;
+    const modal = new bootstrap.Modal(document.getElementById('completeSessionModal'));
+    modal.show();
+}
+
+function missSession(sessionId) {
+    document.getElementById('missSessionForm').action = `/miss-session/${sessionId}`;
+    const modal = new bootstrap.Modal(document.getElementById('missSessionModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

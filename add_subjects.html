@@ -1,0 +1,205 @@
+{% extends "layout.html" %}
+
+{% block title %}Add Subjects - AI Study Planner{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i data-feather="plus-circle" class="me-2"></i>
+                    Add Study Subjects
+                </h3>
+                <p class="text-muted mb-0">Add your subjects and let AI break them down into manageable study chapters</p>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="subjectsForm">
+                    <input type="hidden" id="subject_count" name="subject_count" value="1">
+                    
+                    <div id="subjects-container">
+                        <!-- Subject 1 (default) -->
+                        <div class="subject-group mb-4 p-3 border rounded" data-subject="0">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">Subject 1</h5>
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-subject" onclick="removeSubject(0)" style="display: none;">
+                                    <i data-feather="x"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Subject Name *</label>
+                                    <input type="text" class="form-control" name="subject_name_0" required 
+                                           placeholder="e.g., Calculus, History, Biology">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Number of Chapters *</label>
+                                    <input type="number" class="form-control" name="subject_chapters_0" 
+                                           min="1" max="50" value="5" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Difficulty Level</label>
+                                    <select class="form-select" name="subject_difficulty_0">
+                                        <option value="easy">Easy</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="hard">Hard</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Exam Date *</label>
+                                    <input type="date" class="form-control" name="exam_date_0" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add Subject Button -->
+                    <div class="text-center mb-4">
+                        <button type="button" class="btn btn-outline-primary" onclick="addSubject()">
+                            <i data-feather="plus" class="me-1"></i>
+                            Add Another Subject
+                        </button>
+                    </div>
+                    
+                    <!-- AI Info -->
+                    <div class="alert alert-info">
+                        <i data-feather="cpu" class="me-2"></i>
+                        <strong>AI-Powered Breakdown:</strong> Our AI will analyze your subjects and create detailed chapter breakdowns with estimated study times, difficulty assessments, and optimal learning sequences.
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="brain" class="me-2"></i>
+                            Analyze Subjects & Create Chapters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let subjectCount = 1;
+
+function addSubject() {
+    const container = document.getElementById('subjects-container');
+    const subjectDiv = document.createElement('div');
+    subjectDiv.className = 'subject-group mb-4 p-3 border rounded';
+    subjectDiv.setAttribute('data-subject', subjectCount);
+    
+    subjectDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Subject ${subjectCount + 1}</h5>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-subject" onclick="removeSubject(${subjectCount})">
+                <i data-feather="x"></i>
+            </button>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Subject Name *</label>
+                <input type="text" class="form-control" name="subject_name_${subjectCount}" required 
+                       placeholder="e.g., Calculus, History, Biology">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Number of Chapters *</label>
+                <input type="number" class="form-control" name="subject_chapters_${subjectCount}" 
+                       min="1" max="50" value="5" required>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Difficulty Level</label>
+                <select class="form-select" name="subject_difficulty_${subjectCount}">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Exam Date *</label>
+                <input type="date" class="form-control" name="exam_date_${subjectCount}" required>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(subjectDiv);
+    subjectCount++;
+    
+    // Update the subject count input
+    document.getElementById('subject_count').value = subjectCount;
+    
+    // Show remove buttons if more than one subject
+    updateRemoveButtons();
+    
+    // Re-initialize Feather icons for new buttons
+    feather.replace();
+}
+
+function removeSubject(index) {
+    const subjectDiv = document.querySelector(`[data-subject="${index}"]`);
+    if (subjectDiv) {
+        subjectDiv.remove();
+        updateRemoveButtons();
+        renumberSubjects();
+    }
+}
+
+function updateRemoveButtons() {
+    const subjects = document.querySelectorAll('.subject-group');
+    const removeButtons = document.querySelectorAll('.remove-subject');
+    
+    removeButtons.forEach(button => {
+        button.style.display = subjects.length > 1 ? 'block' : 'none';
+    });
+}
+
+function renumberSubjects() {
+    const subjects = document.querySelectorAll('.subject-group');
+    let actualCount = 0;
+    
+    subjects.forEach((subject, index) => {
+        const title = subject.querySelector('h5');
+        title.textContent = `Subject ${index + 1}`;
+        
+        // Update form field names
+        const inputs = subject.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            const name = input.name;
+            if (name) {
+                const baseName = name.replace(/_\d+$/, '');
+                input.name = `${baseName}_${index}`;
+            }
+        });
+        
+        subject.setAttribute('data-subject', index);
+        const removeBtn = subject.querySelector('.remove-subject');
+        if (removeBtn) {
+            removeBtn.setAttribute('onclick', `removeSubject(${index})`);
+        }
+        
+        actualCount++;
+    });
+    
+    // Update subject count
+    document.getElementById('subject_count').value = actualCount;
+    subjectCount = actualCount;
+}
+
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        input.min = today;
+    });
+});
+</script>
+{% endblock %}
